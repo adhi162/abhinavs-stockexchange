@@ -1,76 +1,57 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const faqs = [
+  {
+    question: "What documents do I need?",
+    answer: "For exchanges up to 50,000 THB we only need your passport. Higher amounts or real-estate settlements require proof of funds so we can prepare FET paperwork."
+  },
+  {
+    question: "How fast can you settle?",
+    answer: "Cash deliveries and ATM pickups are typically done in 30–90 minutes. Bank transfers are instant once the rate is confirmed."
+  },
+  {
+    question: "Is FET support included?",
+    answer: "Yes. We prepare full Foreign Exchange Transaction certificates so you can register freehold property or condo titles in Thailand."
+  },
+  {
+    question: "Do you accept MIR cards?",
+    answer: "We accept MIR, UnionPay, Visa, Mastercard, as well as USDT or BTC for on/off ramping."
+  },
+  {
+    question: "Is there a minimum or maximum amount?",
+    answer: "No minimum. We regularly handle both tourist amounts and multi-million THB settlements."
+  },
+  {
+    question: "How do I secure the best rate?",
+    answer: "Send the amount and route in WhatsApp, we reply with a binding rate. High-volume clients get custom spreads automatically."
+  }
+];
 
 export const FAQSection = () => {
-  const faqs = [
-    {
-      question: "What documents do I need for currency exchange?",
-      answer: "For exchanges up to 50,000 THB, you only need your passport. For larger amounts, we may require additional documentation to comply with Thai financial regulations."
-    },
-    {
-      question: "How long does the exchange process take?",
-      answer: "Most exchanges are completed within 30-60 minutes. For cash delivery, it typically takes 1-3 hours depending on your location. Bank transfers are usually instant."
-    },
-    {
-      question: "Do you have the best rates in Thailand?",
-      answer: "Yes! We guarantee the best rates. If you find a better rate elsewhere, we'll match it and give you an even better deal. This is our commitment to all clients."
-    },
-    {
-      question: "Is it safe to exchange large amounts?",
-      answer: "Absolutely. We are fully licensed (License MC125660019) and operate under Thai financial regulations. All transactions are secure and documented."
-    },
-    {
-      question: "What is FET and do I need it?",
-      answer: "FET (Foreign Exchange Transaction) is a certificate required when buying property in Thailand as a foreigner. It proves that funds came from abroad legally. We handle all FET documentation for you."
-    },
-    {
-      question: "Do you accept MIR cards?",
-      answer: "Yes! We accept MIR cards from all Russian banks, as well as Union Pay and other major payment methods."
-    },
-    {
-      question: "Can I exchange crypto currencies?",
-      answer: "Yes, we exchange USDT, BTC, and other major cryptocurrencies. Rates are competitive and the process is straightforward."
-    },
-    {
-      question: "What are your working hours?",
-      answer: "We work 7 days a week from 9:00 AM to 8:00 PM. For urgent exchanges outside these hours, please contact us via WhatsApp or Telegram."
-    },
-    {
-      question: "Is there a minimum exchange amount?",
-      answer: "There is no minimum amount. We handle exchanges from small tourist amounts to large property-related transactions."
-    },
-    {
-      question: "How do I get the best rate?",
-      answer: "Contact us via WhatsApp or Telegram with the amount you want to exchange. We'll give you our best rate immediately. For very large amounts, we can offer even better rates."
-    }
-  ];
-
   return (
-    <section id="faq" className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-          <p className="text-muted-foreground text-lg">
-            Everything you need to know about our currency exchange services
+    <section id="faq" className="py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
+            FAQ
           </p>
+          <h2 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
+            Everything you keep asking us
+          </h2>
         </div>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="mt-12 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/50 backdrop-blur">
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem 
-                key={index} 
+              <AccordionItem
+                key={faq.question}
                 value={`item-${index}`}
-                className="bg-card border border-border rounded-lg px-6"
+                className="rounded-2xl border border-slate-100 bg-white px-4"
               >
-                <AccordionTrigger className="text-left text-foreground hover:text-primary transition-colors">
+                <AccordionTrigger className="text-left text-base font-semibold text-slate-900 hover:text-emerald-600">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="pb-4 text-sm leading-relaxed text-slate-600">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

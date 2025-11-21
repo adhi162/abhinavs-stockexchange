@@ -3,95 +3,132 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send } from "lucide-react";
 
-export const ExchangeCalculator = () => {
-  const [amount, setAmount] = useState("1000");
-  const [fromCurrency, setFromCurrency] = useState("RUB");
+const deliveryMethods = [
+  { id: "atm", label: "ATM pickup" },
+  { id: "cash", label: "Cash delivery" },
+  { id: "office", label: "Private office" },
+  { id: "bank", label: "Bank transfer" }
+];
 
-  const currencies = ["RUB", "USD", "EUR", "KZT", "USDT", "BTC"];
-  const deliveryMethods = [
-    { id: "atm", label: "ATM" },
-    { id: "cash", label: "Cash Delivery" },
-    { id: "office", label: "Office Pickup" },
-    { id: "bank", label: "Bank Account" }
-  ];
+const currencies = ["RUB", "USD", "EUR", "KZT", "USDT", "BTC"];
+
+export const ExchangeCalculator = () => {
+  const [amount, setAmount] = useState("100000");
+  const [fromCurrency, setFromCurrency] = useState("RUB");
+  const [deliveryMethod, setDeliveryMethod] = useState("atm");
 
   return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
-        <Card className="max-w-2xl mx-auto p-8 bg-card border-border">
-          <div className="mb-6">
-            <Label className="text-foreground mb-3 block text-lg font-semibold">
-              Delivery Method
-            </Label>
-            <Tabs defaultValue="atm" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-muted">
-                {deliveryMethods.map((method) => (
-                  <TabsTrigger key={method.id} value={method.id} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    {method.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
+    <section id="exchange" className="py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Instant quote</p>
+          <h2 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
+            Choose how you’d like to exchange
+          </h2>
+          <p className="mt-4 text-lg text-slate-600">
+            Tap a route, enter the amount, and we’ll confirm the final rate via WhatsApp or Telegram within minutes.
+          </p>
+        </div>
 
-          <div className="space-y-6">
+        <Card className="mt-12 border border-white/70 bg-white/85 p-10 shadow-2xl shadow-slate-200/70 backdrop-blur">
+          <div className="space-y-8">
             <div>
-              <Label className="text-foreground mb-3 block">Exchange From</Label>
-              <div className="grid grid-cols-6 gap-2">
-                {currencies.map((currency) => (
-                  <Button
-                    key={currency}
-                    variant={fromCurrency === currency ? "default" : "outline"}
-                    className={fromCurrency === currency ? "bg-primary text-primary-foreground" : ""}
-                    onClick={() => setFromCurrency(currency)}
-                  >
-                    {currency}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="amount" className="text-foreground mb-2 block">
-                Amount
+              <Label className="mb-3 block text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+                Delivery method
               </Label>
-              <Input
-                id="amount"
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="text-lg bg-input border-border text-foreground"
-              />
+              <Tabs value={deliveryMethod} onValueChange={setDeliveryMethod}>
+                <TabsList className="grid w-full grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-3 sm:grid-cols-4">
+                  {deliveryMethods.map((method) => (
+                    <TabsTrigger
+                      key={method.id}
+                      value={method.id}
+                      className="rounded-xl border border-transparent px-4 py-3 text-sm font-semibold text-slate-500 data-[state=active]:border-emerald-200 data-[state=active]:bg-white data-[state=active]:text-emerald-600"
+                    >
+                      {method.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
 
-            <div className="flex gap-4">
-              <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Exchange via WhatsApp
-              </Button>
-              <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                <Send className="w-5 h-5" />
-                Exchange via Telegram
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">⭐</div>
-              <div className="text-sm text-muted-foreground">
-                <div className="font-semibold text-foreground">Google Rating</div>
-                <div className="text-primary">★★★★★</div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <Label htmlFor="amount" className="mb-3 block text-sm font-medium text-slate-600">
+                  Amount to exchange
+                </Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  className="h-14 rounded-2xl border-slate-200 bg-white text-lg text-slate-900"
+                />
+              </div>
+              <div>
+                <Label className="mb-3 block text-sm font-medium text-slate-600">
+                  Choose currency
+                </Label>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {currencies.map((currency) => (
+                    <button
+                      key={currency}
+                      onClick={() => setFromCurrency(currency)}
+                      className={`rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+                        fromCurrency === currency
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      {currency}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">⭐</div>
-              <div className="text-sm text-muted-foreground">
-                <div className="font-semibold text-foreground">Yandex Rating</div>
-                <div className="text-primary">★★★★★</div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Button
+                asChild
+                className="h-14 rounded-2xl text-base font-semibold"
+              >
+                <a
+                  href={`https://wa.me/66635503442?text=Hi%20Senate%2C%20I%20want%20to%20exchange%20${amount}%20${fromCurrency}%20via%20${deliveryMethod}.`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  Lock rate in WhatsApp
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="secondary"
+                className="h-14 rounded-2xl text-base font-semibold"
+              >
+                <a href="https://t.me/senateexchange" target="_blank" rel="noreferrer">
+                  <Send className="h-5 w-5" />
+                  Continue in Telegram
+                </a>
+              </Button>
+            </div>
+
+            <div className="grid gap-6 rounded-3xl border border-slate-100 bg-slate-50/70 p-6 sm:grid-cols-2">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">⭐</div>
+                <div className="text-sm text-slate-600">
+                  <p className="font-semibold text-slate-900">Google rating</p>
+                  <p className="text-emerald-600">5.0 / 5 • 210 reviews</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">⭐</div>
+                <div className="text-sm text-slate-600">
+                  <p className="font-semibold text-slate-900">Yandex rating</p>
+                  <p className="text-emerald-600">5.0 / 5 • 150 reviews</p>
+                </div>
               </div>
             </div>
           </div>

@@ -1,57 +1,94 @@
+import { useEffect, useState } from "react";
 import { MessageCircle, Calculator, Truck, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const steps = [
+  {
+    icon: MessageCircle,
+    title: "Say hello",
+    description: "Send the amount and currency via WhatsApp or Telegram. No forms, no friction."
+  },
+  {
+    icon: Calculator,
+    title: "Get a live quote",
+    description: "We send you a binding rate, fees, and delivery ETA within minutes."
+  },
+  {
+    icon: Truck,
+    title: "Pick the route",
+    description: "Choose ATM withdrawal, cash courier, office pickup, or bank transfer."
+  },
+  {
+    icon: CheckCircle,
+    title: "Settle in hours",
+    description: "Sign off on the rate and complete the exchange in as little as 30 minutes."
+  }
+];
 
 export const ProcessSection = () => {
-  const steps = [
-    {
-      icon: MessageCircle,
-      title: "Contact Us",
-      description: "Send us a message via WhatsApp or Telegram with the amount you want to exchange"
-    },
-    {
-      icon: Calculator,
-      title: "Get Quote",
-      description: "Receive the best rate instantly. We guarantee the most competitive rates in Thailand"
-    },
-    {
-      icon: Truck,
-      title: "Choose Delivery",
-      description: "Select ATM withdrawal, cash delivery, office pickup, or bank transfer"
-    },
-    {
-      icon: CheckCircle,
-      title: "Complete Exchange",
-      description: "Fast and secure transaction completed. Get your money within 1-3 hours"
-    }
-  ];
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % steps.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const lineProgress = ((activeStep + 1) / steps.length) * 100;
 
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-foreground mb-4">How It Works</h2>
-          <p className="text-muted-foreground text-lg">
-            Simple 4-step process to exchange your currency
+    <section id="process" className="py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
+            How it works
           </p>
+          <h2 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
+            Concierge settlement in four steps
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 relative group hover:bg-primary/20 transition-colors">
-                  <step.icon className="w-10 h-10 text-primary" />
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                    {index + 1}
-                  </div>
+        <div className="relative mt-14">
+          <div className="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-slate-100 lg:block" />
+          <div className="absolute bottom-0 left-0 right-0 mx-auto hidden h-1 w-4/5 rounded-full bg-slate-100 lg:block" />
+          <div
+            className="absolute bottom-0 left-0 right-0 mx-auto hidden h-1 w-4/5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-700 lg:block"
+            style={{ width: `${lineProgress}%` }}
+          />
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, index) => (
+              <div
+                key={step.title}
+                className={cn(
+                  "relative rounded-3xl border border-white/70 bg-white/85 p-8 shadow-xl shadow-slate-200/50 backdrop-blur transition-all duration-500",
+                  activeStep === index ? "ring-2 ring-emerald-200" : "opacity-80"
+                )}
+                style={{ transitionDelay: `${index * 120}ms` }}
+              >
+                <div className="absolute left-6 top-6 text-sm font-semibold text-slate-300">
+                  {String(index + 1).padStart(2, "0")}
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <div
+                  className={cn(
+                    "mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 transition duration-500",
+                    activeStep === index && "scale-110 bg-emerald-500/10 text-emerald-700"
+                  )}
+                >
+                  <step.icon className="h-6 w-6" aria-hidden />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-900">{step.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">{step.description}</p>
+                <div
+                  className={cn(
+                    "absolute inset-x-4 bottom-4 h-1 rounded-full bg-emerald-100 transition-all duration-500",
+                    activeStep === index ? "scale-x-100 opacity-100" : "scale-x-75 opacity-0"
+                  )}
+                />
               </div>
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] h-0.5 bg-border" />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
