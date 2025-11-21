@@ -171,7 +171,7 @@ export const AdminDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="rounded-full px-4 text-sm font-semibold text-slate-600 hover:text-slate-900">
+        <Button className="rounded-full bg-slate-900 px-5 text-sm font-semibold text-white shadow-lg shadow-slate-400/30 transition duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:bg-slate-800 focus-visible:-translate-y-0.5">
           Login
         </Button>
       </DialogTrigger>
