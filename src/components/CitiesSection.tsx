@@ -40,7 +40,7 @@ const cities = [
 
 export const CitiesSection = () => {
   return (
-    <section id="cities" className="py-24">
+    <section id="cities" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
@@ -58,6 +58,8 @@ export const CitiesSection = () => {
           {cities.map((city, index) => (
             <Card
               key={city.name}
+              data-animate="fade-up"
+              data-animate-delay={String(index * 90)}
               className="group overflow-hidden border border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur"
             >
               <div className="relative h-48 overflow-hidden">

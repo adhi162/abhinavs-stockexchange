@@ -29,7 +29,7 @@ const faqs = [
 
 export const FAQSection = () => {
   return (
-    <section id="faq" className="py-24">
+    <section id="faq" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
@@ -40,7 +40,11 @@ export const FAQSection = () => {
           </h2>
         </div>
 
-        <div className="mt-12 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/50 backdrop-blur">
+        <div
+          data-animate="fade-up"
+          data-animate-delay="100"
+          className="mt-12 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/50 backdrop-blur"
+        >
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem

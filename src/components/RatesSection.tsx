@@ -13,7 +13,7 @@ const rates = [
 
 export const RatesSection = () => {
   return (
-    <section id="rates" className="py-24">
+    <section id="rates" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>
@@ -27,7 +27,10 @@ export const RatesSection = () => {
               These are indicative desk rates. Your final quote can be locked in WhatsApp and typically improves for larger tickets.
             </p>
 
-            <Card className="mt-8 overflow-hidden border border-white/70 bg-white/85 shadow-2xl shadow-slate-200/60 backdrop-blur">
+            <Card
+              data-animate="fade-up"
+              className="mt-8 overflow-hidden border border-white/70 bg-white/85 shadow-2xl shadow-slate-200/60 backdrop-blur"
+            >
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -79,7 +82,11 @@ export const RatesSection = () => {
           </div>
 
           <div className="relative">
-            <div className="sticky top-32 space-y-6 rounded-[32px] border border-white/70 bg-white/85 p-8 shadow-2xl shadow-slate-200/60 backdrop-blur">
+            <div
+              data-animate="fade-up"
+              data-animate-delay="120"
+              className="sticky top-32 space-y-6 rounded-[32px] border border-white/70 bg-white/85 p-8 shadow-2xl shadow-slate-200/60 backdrop-blur"
+            >
               <img
                 src={heroBackground}
                 alt="Currency desk"

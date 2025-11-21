@@ -21,7 +21,7 @@ export const ExchangeCalculator = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("atm");
 
   return (
-    <section id="exchange" className="py-24">
+    <section id="exchange" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Instant quote</p>

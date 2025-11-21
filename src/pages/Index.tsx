@@ -9,8 +9,11 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { FAQSection } from "@/components/FAQSection";
 import { CTASection } from "@/components/CTASection";
 import { Footer } from "@/components/Footer";
+import { useScrollAnimations } from "@/hooks/use-scroll-animations";
 
 const Index = () => {
+  useScrollAnimations();
+
   return (
     <div className="min-h-screen bg-transparent">
       <Header />

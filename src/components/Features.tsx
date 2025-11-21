@@ -26,7 +26,7 @@ const featureList = [
 
 export const Features = () => {
   return (
-    <section id="features" className="py-24">
+    <section id="features" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Why Senate</p>
@@ -39,9 +39,11 @@ export const Features = () => {
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {featureList.map((feature) => (
+          {featureList.map((feature, index) => (
             <Card
               key={feature.title}
+              data-animate="fade-up"
+              data-animate-delay={String(120 * index)}
               className="group relative overflow-hidden border border-white/70 bg-white/85 p-8 shadow-xl shadow-slate-200/60 backdrop-blur"
             >
               <div className="absolute inset-x-8 top-8 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent blur-3xl transition-opacity group-hover:opacity-100" />

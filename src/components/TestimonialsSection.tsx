@@ -42,7 +42,7 @@ const testimonials = [
 
 export const TestimonialsSection = () => {
   return (
-    <section id="testimonials" className="py-24">
+    <section id="testimonials" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col items-center gap-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
@@ -62,9 +62,11 @@ export const TestimonialsSection = () => {
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((testimonial) => (
+          {testimonials.map((testimonial, index) => (
             <Card
               key={testimonial.name}
+              data-animate="fade-up"
+              data-animate-delay={String(index * 80)}
               className="flex h-full flex-col gap-4 border border-white/70 bg-white/85 p-6 shadow-lg shadow-slate-200/50 backdrop-blur"
             >
               <div className="flex items-center justify-between">

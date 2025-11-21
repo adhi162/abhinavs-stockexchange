@@ -38,7 +38,7 @@ export const ProcessSection = () => {
   const lineProgress = ((activeStep + 1) / steps.length) * 100;
 
   return (
-    <section id="process" className="py-24">
+    <section id="process" data-animate="fade-up" className="py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
@@ -61,6 +61,8 @@ export const ProcessSection = () => {
             {steps.map((step, index) => (
               <div
                 key={step.title}
+                data-animate="fade-up"
+                data-animate-delay={String(index * 120)}
                 className={cn(
                   "relative rounded-3xl border border-white/70 bg-white/85 p-8 shadow-xl shadow-slate-200/50 backdrop-blur transition-all duration-500",
                   activeStep === index ? "ring-2 ring-emerald-200" : "opacity-80"
