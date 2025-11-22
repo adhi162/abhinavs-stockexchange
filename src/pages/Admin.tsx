@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { authenticator } from "otplib";
 import { ShieldCheck, KeyRound, Lock, Fingerprint, ArrowRight, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 
 // MFA Secret - must be base32 encoded (uppercase, no spaces)
 // This secret is used for Google Authenticator TOTP generation
-const DEFAULT_MFA_SECRET = "SENATEEXCHANGEADMINADMIN";
+// Example base32: JBSWY3DPEHPK3PXP (do not use this in production)
+const DEFAULT_MFA_SECRET = "JBSWY3DPEHPK3PXP";
 const MFA_SECRET = (import.meta.env.VITE_ADMIN_MFA_SECRET ?? DEFAULT_MFA_SECRET).toUpperCase().replace(/\s/g, "");
 
 // Predefined allowed emails with their passwords - only these can access admin panel
@@ -21,7 +23,7 @@ const AUTHORIZED_USERS: Record<string, string> = {
 };
 
 // Configure authenticator with a wider time window for better compatibility
-authenticator.options = { 
+authenticator.options = {
   window: 2, // Accept codes from 2 steps before and 2 steps after current time (total 5 steps = 2.5 minutes)
   step: 30 // 30 second time steps
 };
@@ -30,26 +32,32 @@ type Step = "credentials" | "mfa" | "authorized";
 
 const Admin = () => {
   const [step, setStep] = useState<Step>("credentials");
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [mfaCode, setMfaCode] = useState("");
   const { toast } = useToast();
 
   const displayEmail = credentials.email || "admin@senate.exchange";
 
-  const provisioningUri = useMemo(
-    () => authenticator.keyuri(displayEmail, "Senate Exchange", MFA_SECRET),
-    [displayEmail]
-  );
+  // Generate provisioning URI for TOTP (Google Authenticator)
+  const provisioningUri = useMemo(() => {
+    try {
+      return authenticator.keyuri(displayEmail, "Senate Exchange", MFA_SECRET);
+    } catch (e) {
+      console.error("Failed to generate provisioning URI", e);
+      return "";
+    }
+  }, [displayEmail]);
 
-  const qrUrl = useMemo(
-    () =>
-      `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${encodeURIComponent(provisioningUri)}`,
-    [provisioningUri]
-  );
+  // Do NOT encodeURIComponent the provisioningUri, Google expects the raw otpauth URI
+  const qrUrl = useMemo(() => {
+    if (!provisioningUri) return "";
+    return `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${provisioningUri}`;
+  }, [provisioningUri]);
 
   const handleCredentialsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
+
     if (!credentials.email || !credentials.password) {
       toast({
         title: "Missing details",
@@ -81,62 +89,13 @@ const Admin = () => {
       return;
     }
 
-    setStep("mfa");
+    navigate("/admin/mfa", { state: { email: credentials.email } });
     toast({
       title: "Credentials accepted",
       description: "Confirm the login by entering your Google Authenticator code."
     });
   };
 
-  const handleMfaSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
-    // Validate code format
-    const trimmedCode = mfaCode.trim();
-    if (!/^[0-9]{6}$/.test(trimmedCode)) {
-      toast({
-        title: "Invalid code",
-        description: "Enter the 6-digit code from Google Authenticator.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      // Verify the TOTP code
-      const isValid = authenticator.check(trimmedCode, MFA_SECRET);
-      
-      if (!isValid) {
-        // Generate current token for debugging (only in development)
-        if (import.meta.env.DEV) {
-          const currentToken = authenticator.generate(MFA_SECRET);
-          console.log("Current expected token:", currentToken);
-          console.log("Entered token:", trimmedCode);
-          console.log("MFA Secret:", MFA_SECRET);
-        }
-        
-        toast({
-          title: "Incorrect token",
-          description: "The Google Authenticator code is not valid. Make sure: 1) Your device time is synchronized, 2) You entered the secret correctly, 3) The code hasn't expired.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setStep("authorized");
-      toast({
-        title: "MFA successful",
-        description: "Welcome back. Admin panel unlocked."
-      });
-    } catch (error) {
-      console.error("MFA verification error:", error);
-      toast({
-        title: "Verification error",
-        description: "An error occurred during verification. Please check the console for details and try again.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleLogout = () => {
     setStep("credentials");
@@ -190,33 +149,6 @@ const Admin = () => {
               </div>
             </Card>
 
-            <Card className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/60 backdrop-blur">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">
-                Google Authenticator setup
-              </p>
-              <div className="mt-4 flex flex-col gap-6 lg:flex-row">
-                <div className="space-y-3 text-sm text-slate-600">
-                  <p>1. Open Google Authenticator on your device.</p>
-                  <p>2. Tap "+" → "Enter a setup key".</p>
-                  <p>
-                    3. Use account name <span className="font-semibold text-slate-900">{displayEmail}</span> and
-                    paste the key below.
-                  </p>
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 px-4 py-3 font-mono text-lg tracking-[0.3em] text-emerald-700">
-                    {MFA_SECRET}
-                  </div>
-                  <p className="text-xs text-slate-400">Rotate the secret via VITE_ADMIN_MFA_SECRET env.</p>
-                </div>
-                <div className="flex flex-col items-center justify-center gap-3">
-                  <img
-                    src={qrUrl}
-                    alt="Google Authenticator QR"
-                    className="h-44 w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
-                  />
-                  <p className="text-xs text-slate-500">Scan QR instead of entering the key manually.</p>
-                </div>
-              </div>
-            </Card>
           </div>
 
           <div>
@@ -270,36 +202,7 @@ const Admin = () => {
                 </form>
               )}
 
-              {step === "mfa" && (
-                <form className="space-y-6" onSubmit={handleMfaSubmit}>
-                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
-                    <KeyRound className="h-6 w-6 text-emerald-600" />
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Step 2</p>
-                      <p className="text-lg font-semibold text-slate-900">Enter Google Authenticator code</p>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="mfa-code" className="text-slate-700">6-digit code</Label>
-                    <Input
-                      id="mfa-code"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={6}
-                      value={mfaCode}
-                      onChange={(event) => setMfaCode(event.target.value.replace(/[^0-9]/g, ""))}
-                      className="mt-2 text-center text-2xl tracking-[0.5em] bg-white border-slate-200 text-slate-900"
-                      placeholder="••••••"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full rounded-full text-base">
-                    Verify & unlock
-                  </Button>
-                  <p className="text-center text-xs text-slate-500">
-                    Codes refresh every 30 seconds. Confirm the timestamp on your device is accurate.
-                  </p>
-                </form>
-              )}
+
 
               {step === "authorized" && (
                 <div className="space-y-6">
@@ -315,9 +218,9 @@ const Admin = () => {
                     and handle compliance operations.
                   </p>
                   <div className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-sm text-slate-600">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between min-w-0">
                       <span className="text-slate-500">Operator</span>
-                      <span className="font-semibold text-slate-900">{displayEmail}</span>
+                      <span className="font-semibold text-slate-900 max-w-[180px] truncate text-ellipsis overflow-hidden block text-right" title={displayEmail}>{displayEmail}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">MFA secret</span>
