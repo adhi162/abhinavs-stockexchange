@@ -3,7 +3,7 @@ import { MessageCircle, Send } from "lucide-react";
 const buttons = [
   {
     label: "WhatsApp",
-    href: "https://wa.me/66635503442",
+    href: "https://wa.me/9779841234567",
     icon: MessageCircle,
     bg: "bg-emerald-500 hover:bg-emerald-600",
   },

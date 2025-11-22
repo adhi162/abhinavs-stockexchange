@@ -21,7 +21,12 @@ export const ExchangeCalculator = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("atm");
 
   return (
-    <section id="exchange" data-animate="fade-up" className="py-24">
+    <section
+      id="exchange"
+      data-animate="fade-up"
+      data-animate-section="exchange"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Instant quote</p>
@@ -95,7 +100,7 @@ export const ExchangeCalculator = () => {
                 className="h-14 rounded-2xl text-base font-semibold"
               >
                 <a
-                  href={`https://wa.me/66635503442?text=Hi%20Senate%2C%20I%20want%20to%20exchange%20${amount}%20${fromCurrency}%20via%20${deliveryMethod}.`}
+                  href={`https://wa.me/9779841234567?text=Hi%20Senate%2C%20I%20want%20to%20exchange%20${amount}%20${fromCurrency}%20via%20${deliveryMethod}.`}
                   target="_blank"
                   rel="noreferrer"
                 >

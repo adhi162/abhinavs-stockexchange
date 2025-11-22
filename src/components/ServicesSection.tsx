@@ -5,12 +5,12 @@ const services = [
   {
     icon: Wallet,
     title: "High-limit FX",
-    description: "Large ticket RUB, USD, EUR, KZT conversions into THB with institutional spreads."
+    description: "Large ticket RUB, USD, EUR, KZT conversions into NPR with institutional spreads."
   },
   {
     icon: Building2,
     title: "Real estate payments",
-    description: "Complete FET packages for freehold purchases with developer liaison."
+    description: "Complete compliance packages for property purchases with developer liaison."
   },
   {
     icon: Shield,
@@ -20,7 +20,7 @@ const services = [
   {
     icon: CreditCard,
     title: "Card processing",
-    description: "Accept MIR, UnionPay, and Visa cards with direct settlement into Thai Baht."
+    description: "Accept MIR, UnionPay, and Visa cards with direct settlement into Nepali Rupee."
   },
   {
     icon: Banknote,
@@ -30,7 +30,7 @@ const services = [
   {
     icon: Globe,
     title: "Crypto ramps",
-    description: "On/off ramp USDT or BTC into THB with instant confirmations."
+    description: "On/off ramp USDT or BTC into NPR with instant confirmations."
   }
 ];
 
@@ -41,7 +41,7 @@ export const ServicesSection = () => {
         <div className="flex flex-col gap-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">What we do</p>
           <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-            Built for people moving money into Thailand
+            Built for people moving money into Nepal
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-slate-600">
             From a quick vacation swap to multi-million property deals, our desk adapts to the way you like to settle.

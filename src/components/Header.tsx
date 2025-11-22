@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { AdminDialog } from "@/components/AdminDialog";
 
 const navLinks = [
   { label: "Exchange", href: "#exchange" },
@@ -17,7 +16,7 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-white/40 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
-        <a href="#hero" className="flex items-center gap-3">
+        <a href="#hero" className="flex items-center gap-3 flex-shrink-0">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-300 to-green-600 text-xl font-bold text-white shadow-lg shadow-green-500/30">
             S
           </div>
@@ -27,18 +26,15 @@ export const Header = () => {
           </div>
         </a>
 
-        <nav className="hidden items-center gap-6 text-base font-semibold text-slate-500 lg:flex">
-          {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="transition-colors hover:text-slate-900">
-              {link.label}
-            </a>
-          ))}
-        </nav>
+        <div className="flex items-center gap-6 lg:gap-8">
+          <nav className="hidden items-center gap-6 lg:gap-8 text-base font-semibold text-slate-500 lg:flex">
+            {navLinks.map((link) => (
+              <a key={link.href} href={link.href} className="transition-colors hover:text-slate-900 whitespace-nowrap">
+                {link.label}
+              </a>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:block">
-            <AdminDialog />
-          </div>
           <Button
             size="icon"
             variant="ghost"
@@ -64,9 +60,6 @@ export const Header = () => {
                 {link.label}
               </a>
             ))}
-            <div className="pt-2">
-              <AdminDialog />
-            </div>
           </div>
         </div>
       )}

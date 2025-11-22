@@ -5,22 +5,22 @@ import { Calendar, ArrowRight } from "lucide-react";
 export const BlogSection = () => {
   const posts = [
     {
-      title: "How to Buy Property in Thailand: Complete Guide",
-      excerpt: "Everything you need to know about purchasing real estate in Thailand as a foreigner, including FET requirements and legal considerations.",
+      title: "How to Buy Property in Nepal: Complete Guide",
+      excerpt: "Everything you need to know about purchasing real estate in Nepal as a foreigner, including regulatory requirements and legal considerations.",
       date: "March 15, 2025",
       image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
       category: "Real Estate"
     },
     {
-      title: "Best Time to Exchange Currency in Thailand",
+      title: "Best Time to Exchange Currency in Nepal",
       excerpt: "Learn about currency exchange patterns, optimal timing, and how to get the best rates throughout the year.",
       date: "March 10, 2025",
       image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=800&q=80",
       category: "Currency Tips"
     },
     {
-      title: "Understanding FET Certificates for Property",
-      excerpt: "A detailed guide to Foreign Exchange Transaction certificates - what they are, why you need them, and how to obtain them.",
+      title: "Understanding Foreign Exchange Regulations in Nepal",
+      excerpt: "A detailed guide to Foreign Exchange Transaction documentation - what you need, why you need it, and how to obtain it.",
       date: "March 5, 2025",
       image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
       category: "Legal"
@@ -33,7 +33,7 @@ export const BlogSection = () => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4">Latest News & Articles</h2>
           <p className="text-muted-foreground text-lg">
-            Helpful guides and updates about currency exchange in Thailand
+            Helpful guides and updates about currency exchange in Nepal
           </p>
         </div>
 

@@ -3,15 +3,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 const faqs = [
   {
     question: "What documents do I need?",
-    answer: "For exchanges up to 50,000 THB we only need your passport. Higher amounts or real-estate settlements require proof of funds so we can prepare FET paperwork."
+    answer: "For exchanges up to 50,000 NPR we only need your passport. Higher amounts or real-estate settlements require proof of funds so we can prepare compliance paperwork."
   },
   {
     question: "How fast can you settle?",
     answer: "Cash deliveries and ATM pickups are typically done in 30–90 minutes. Bank transfers are instant once the rate is confirmed."
   },
   {
-    question: "Is FET support included?",
-    answer: "Yes. We prepare full Foreign Exchange Transaction certificates so you can register freehold property or condo titles in Thailand."
+    question: "Is regulatory compliance support included?",
+    answer: "Yes. We prepare full Foreign Exchange Transaction documentation so you can register property or business transactions in Nepal."
   },
   {
     question: "Do you accept MIR cards?",
@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     question: "Is there a minimum or maximum amount?",
-    answer: "No minimum. We regularly handle both tourist amounts and multi-million THB settlements."
+    answer: "No minimum. We regularly handle both tourist amounts and multi-million NPR settlements."
   },
   {
     question: "How do I secure the best rate?",
@@ -29,7 +29,12 @@ const faqs = [
 
 export const FAQSection = () => {
   return (
-    <section id="faq" data-animate="fade-up" className="py-24">
+    <section
+      id="faq"
+      data-animate="fade-up"
+      data-animate-section="faq"
+      className="py-24"
+    >
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">

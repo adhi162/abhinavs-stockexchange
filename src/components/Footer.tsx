@@ -16,9 +16,9 @@ const footerLinks = [
   {
     title: "Offices",
     links: [
-      { label: "Phuket", href: "#cities" },
-      { label: "Bangkok", href: "#cities" },
-      { label: "Pattaya", href: "#cities" }
+      { label: "Kathmandu", href: "#cities" },
+      { label: "Pokhara", href: "#cities" },
+      { label: "Lalitpur", href: "#cities" }
     ]
   }
 ];
@@ -74,11 +74,11 @@ export const Footer = () => {
               Currency desk for people who value time
             </h3>
             <p className="mt-4 text-sm text-slate-500">
-              Licensed desk • MC125660019 • Operating across Thailand since 2012.
+              Licensed desk • NRB Licensed • Operating across Nepal since 2012.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="sm" className="rounded-full px-4">
-                <a href="https://wa.me/66635503442" target="_blank" rel="noreferrer">
+                <a href="https://wa.me/9779841234567" target="_blank" rel="noreferrer">
                   <MessageCircle className="h-4 w-4" />
                   WhatsApp
                 </a>
@@ -113,9 +113,9 @@ export const Footer = () => {
 
           <FooterGroup title="Contact">
             <div className="space-y-3 text-sm">
-              <a href="tel:+66635503442" className="flex items-center gap-2 font-semibold text-slate-900">
+              <a href="tel:+9779841234567" className="flex items-center gap-2 font-semibold text-slate-900">
                 <Phone className="h-4 w-4 text-emerald-500" />
-                +66 63 550 3442
+                +977 9841 234 567
               </a>
               <p className="text-slate-500">Daily • 9:00 – 20:00</p>
               <div className="space-y-2">

@@ -3,17 +3,22 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import heroBackground from "@/assets/hero-background-1.jpg";
 
 const rates = [
-  { from: "RUB", to: "THB", rate: "0.368", change: "+0.5%", trend: "up" },
-  { from: "USD", to: "THB", rate: "35.42", change: "-0.2%", trend: "down" },
-  { from: "EUR", to: "THB", rate: "37.89", change: "+0.3%", trend: "up" },
-  { from: "KZT", to: "THB", rate: "0.071", change: "+0.1%", trend: "up" },
-  { from: "USDT", to: "THB", rate: "35.38", change: "0.0%", trend: "neutral" },
-  { from: "BTC", to: "THB", rate: "3,254,000", change: "+2.1%", trend: "up" }
+  { from: "RUB", to: "NPR", rate: "1.48", change: "+0.5%", trend: "up" },
+  { from: "USD", to: "NPR", rate: "133.25", change: "-0.2%", trend: "down" },
+  { from: "EUR", to: "NPR", rate: "145.50", change: "+0.3%", trend: "up" },
+  { from: "KZT", to: "NPR", rate: "0.28", change: "+0.1%", trend: "up" },
+  { from: "USDT", to: "NPR", rate: "133.20", change: "0.0%", trend: "neutral" },
+  { from: "BTC", to: "NPR", rate: "12,500,000", change: "+2.1%", trend: "up" }
 ];
 
 export const RatesSection = () => {
   return (
-    <section id="rates" data-animate="fade-up" className="py-24">
+    <section
+      id="rates"
+      data-animate="fade-up"
+      data-animate-section="rates"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>
@@ -76,7 +81,7 @@ export const RatesSection = () => {
                 </table>
               </div>
               <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 text-center text-sm text-slate-500">
-                💡 Rates update on the hour. Large tickets (&gt; 2M THB) qualify for custom spreads.
+                💡 Rates update on the hour. Large tickets (&gt; 2M NPR) qualify for custom spreads.
               </div>
             </Card>
           </div>
@@ -108,7 +113,7 @@ export const RatesSection = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Coverage</span>
-                    <span className="font-semibold text-slate-900">TH nationwide</span>
+                    <span className="font-semibold text-slate-900">Nepal nationwide</span>
                   </div>
                 </div>
               </div>

@@ -8,8 +8,8 @@ const featureList = [
     icon: Wallet
   },
   {
-    title: "Regulated in Thailand",
-    description: "Fully licensed exchange with FET support for real-estate purchases.",
+    title: "Regulated in Nepal",
+    description: "Fully licensed exchange with compliance support for real-estate and business transactions.",
     icon: Shield
   },
   {
@@ -26,7 +26,12 @@ const featureList = [
 
 export const Features = () => {
   return (
-    <section id="features" data-animate="fade-up" className="py-24">
+    <section
+      id="features"
+      data-animate="fade-up"
+      data-animate-section="features"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Why Senate</p>

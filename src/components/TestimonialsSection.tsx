@@ -42,7 +42,12 @@ const testimonials = [
 
 export const TestimonialsSection = () => {
   return (
-    <section id="testimonials" data-animate="fade-up" className="py-24">
+    <section
+      id="testimonials"
+      data-animate="fade-up"
+      data-animate-section="testimonials"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col items-center gap-4 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">

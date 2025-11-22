@@ -7,50 +7,55 @@ const badgePalette = ["#ecfdf3", "#e0f2fe", "#fef3c7", "#f1f5f9", "#fee2e2", "#e
 
 const cities = [
   {
-    name: "Phuket",
-    areas: ["Patong", "Kata", "Karon", "Rawai", "Chalong"],
+    name: "Kathmandu",
+    areas: ["Thamel", "Durbar Marg", "New Road", "Baneshwor", "Lazimpat"],
     image: "https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=800&q=80"
   },
   {
-    name: "Bangkok",
-    areas: ["Sukhumvit", "Silom", "Sathorn", "Ratchada", "Thonglor"],
+    name: "Pokhara",
+    areas: ["Lakeside", "Damside", "Chipledhunga", "Mahendrapul", "Birauta"],
     image: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80"
   },
   {
-    name: "Pattaya",
-    areas: ["Central Pattaya", "Jomtien", "Naklua", "Pratumnak"],
+    name: "Lalitpur",
+    areas: ["Patan Durbar", "Jawalakhel", "Kupondole", "Lagankhel"],
     image: "https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?w=800&q=80"
   },
   {
-    name: "Samui",
-    areas: ["Chaweng", "Lamai", "Bophut", "Mae Nam"],
+    name: "Bhaktapur",
+    areas: ["Durbar Square", "Thimi", "Suryabinayak", "Changunarayan"],
     image: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80"
   },
   {
-    name: "Chiang Mai",
-    areas: ["Old City", "Nimman", "Santitham", "Hang Dong"],
+    name: "Chitwan",
+    areas: ["Narayangarh", "Bharatpur", "Sauraha", "Meghauli"],
     image: "https://images.unsplash.com/photo-1598935898639-81586f7d2129?w=800&q=80"
   },
   {
-    name: "Hua Hin",
-    areas: ["Center", "Khao Takiab", "Cha-Am"],
+    name: "Birgunj",
+    areas: ["City Center", "Adarshnagar", "Golpark", "Simara"],
     image: "https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=800&q=80"
   }
 ];
 
 export const CitiesSection = () => {
   return (
-    <section id="cities" data-animate="fade-up" className="py-24">
+    <section
+      id="cities"
+      data-animate="fade-up"
+      data-animate-section="cities"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
-            Thailand coverage
+            Nepal coverage
           </p>
           <h2 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">
             Wherever you land, the desk is already there
           </h2>
           <p className="mt-4 text-lg text-slate-600">
-            Private couriers and FET-ready support in all major Thai cities.
+            Private couriers and compliance-ready support in all major Nepali cities.
           </p>
         </div>
 

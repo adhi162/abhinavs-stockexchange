@@ -38,7 +38,12 @@ export const ProcessSection = () => {
   const lineProgress = ((activeStep + 1) / steps.length) * 100;
 
   return (
-    <section id="process" data-animate="fade-up" className="py-24">
+    <section
+      id="process"
+      data-animate="fade-up"
+      data-animate-section="process"
+      className="py-24"
+    >
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">
