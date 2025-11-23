@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { MessageCircle, Send, Phone, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getOfficeLocation } from "@/lib/session";
 
 const footerLinks = [
   {
@@ -12,15 +13,15 @@ const footerLinks = [
       { label: "Rates", href: "#rates" },
       { label: "FAQ", href: "#faq" }
     ]
-  },
-  {
-    title: "Offices",
-    links: [
-      { label: "Kathmandu", href: "#cities" },
-      { label: "Pokhara", href: "#cities" },
-      { label: "Lalitpur", href: "#cities" }
-    ]
   }
+  // {
+  //   title: "Offices",
+  //   links: [
+  //     { label: "Kathmandu", href: "#cities" },
+  //     { label: "Pokhara", href: "#cities" },
+  //     { label: "Lalitpur", href: "#cities" }
+  //   ]
+  // }
 ];
 
 type FooterGroupProps = {
@@ -62,6 +63,24 @@ const FooterGroup = ({ title, children }: FooterGroupProps) => {
 };
 
 export const Footer = () => {
+  const [officeLocation, setOfficeLocation] = useState(getOfficeLocation());
+
+  useEffect(() => {
+    // Listen for storage changes to update location in real-time
+    const handleStorageChange = () => {
+      setOfficeLocation(getOfficeLocation());
+    };
+    window.addEventListener("storage", handleStorageChange);
+    // Also check periodically for changes (in case updated in same tab)
+    const interval = setInterval(() => {
+      setOfficeLocation(getOfficeLocation());
+    }, 1000);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <footer className="border-t border-white/60 bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-6xl px-6 py-12">
@@ -123,6 +142,29 @@ export const Footer = () => {
                 <a href="mailto:desk@senate.exchange" className="text-slate-600 hover:text-slate-900">
                   desk@senate.exchange
                 </a>
+              </div>
+            </div>
+          </FooterGroup>
+
+          <FooterGroup title="Main Office">
+            <div className="space-y-3 text-sm text-slate-500">
+              <div className="space-y-2">
+                <p className="font-semibold text-slate-900">Main Office Location</p>
+                <p>{officeLocation.street}</p>
+                <p>{officeLocation.city}</p>
+                {officeLocation.postalCode && <p>Postal Code: {officeLocation.postalCode}</p>}
+              </div>
+              <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+                <iframe
+                  src={officeLocation.mapUrl}
+                  width="100%"
+                  height="200"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="w-full"
+                />
               </div>
             </div>
           </FooterGroup>
