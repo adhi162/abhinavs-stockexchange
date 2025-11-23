@@ -1900,3 +1900,8 @@ The migration is successful when:
 
 This plan provides clear, actionable steps that any AI assistant can follow to implement the backend migration systematically.
 
+
+----------------------
+understand the @BACKEND_MIGRATION_ANALYSIS.md  and this project start actioning on it
+
+and I want clear steps in readme.md about this project and steps to run this application locally and on aws ECS
