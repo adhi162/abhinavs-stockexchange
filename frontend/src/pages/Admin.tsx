@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { getSession, clearSession, saveSession, getOfficeLocation, saveOfficeLocation, type OfficeLocation, getAuthorizedUsers, addAuthorizedUser, updateAuthorizedUserPassword, removeAuthorizedUser, isAuthorizedUser, verifyUserPassword } from "@/lib/session";
+import { getSession, clearSession, saveSession } from "@/lib/session";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import apiClient, { ApiError } from "@/lib/api";
 
 // MFA Secret - must be base32 encoded (uppercase, no spaces)
 // This secret is used for Google Authenticator TOTP generation
@@ -32,32 +33,61 @@ interface AdminPanelProps {
   onLogout: () => void;
 }
 
+interface OfficeLocation {
+  street: string;
+  city: string;
+  postalCode: string;
+  mapUrl: string;
+}
+
 const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [defaultCommission, setDefaultCommission] = useState("0.20");
-  const [currencies, setCurrencies] = useState([
-    { code: "RUB", name: "Russian Ruble", commission: "0.20", enabled: true },
-    { code: "USD", name: "US Dollar", commission: "0.20", enabled: true },
-    { code: "EUR", name: "Euro", commission: "0.20", enabled: true },
-    { code: "KZT", name: "Kazakhstani Tenge", commission: "0.20", enabled: true },
-    { code: "USDT", name: "Tether", commission: "0.25", enabled: true },
-    { code: "BTC", name: "Bitcoin", commission: "0.30", enabled: true },
-  ]);
+  const [currencies, setCurrencies] = useState<Array<{ id: string; code: string; name: string; commissionRate: string; enabled: boolean }>>([]);
   const [newCurrency, setNewCurrency] = useState({ code: "", name: "", commission: "0.20" });
-  const [officeLocation, setOfficeLocation] = useState<OfficeLocation>(getOfficeLocation());
-  const [authorizedUsers, setAuthorizedUsers] = useState<Record<string, string>>(getAuthorizedUsers());
+  const [officeLocation, setOfficeLocation] = useState<OfficeLocation>({ street: "", city: "", postalCode: "", mapUrl: "" });
+  const [authorizedUsers, setAuthorizedUsers] = useState<Array<{ id: string; email: string; createdAt: string; lastLogin?: string }>>([]);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [backendError, setBackendError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Refresh authorized users list when tab changes or component mounts
+  // Load data from backend on mount
   useEffect(() => {
-    setAuthorizedUsers(getAuthorizedUsers());
+    loadData();
   }, []);
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const loadData = async () => {
+    setLoading(true);
+    setBackendError(null);
+    try {
+      const [currenciesData, usersData, officeData, settingsData] = await Promise.all([
+        apiClient.getCurrencies(),
+        apiClient.getUsers(),
+        apiClient.getOfficeLocation(),
+        apiClient.getSettings(),
+      ]);
+      setCurrencies(currenciesData);
+      setAuthorizedUsers(usersData);
+      setOfficeLocation(officeData);
+      setDefaultCommission(settingsData.defaultCommission);
+    } catch (error) {
+      const apiError = error as ApiError;
+      setBackendError(apiError.message);
+      toast({
+        title: "Backend connection failed",
+        description: apiError.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       toast({
@@ -75,19 +105,26 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    // In production, verify current password and update on server
-    updateAuthorizedUserPassword(email, newPassword);
-    setAuthorizedUsers(getAuthorizedUsers());
-    toast({
-      title: "Password updated",
-      description: "Your password has been successfully updated."
-    });
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    try {
+      await apiClient.updateUserPassword(email, currentPassword, newPassword);
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully updated."
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to update password",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleUpdateDefaultCommission = () => {
+  const handleUpdateDefaultCommission = async () => {
     const commission = parseFloat(defaultCommission);
     if (isNaN(commission) || commission < 0 || commission > 100) {
       toast({
@@ -97,14 +134,23 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    // In production, save to server
-    toast({
-      title: "Default commission updated",
-      description: `Default commission rate set to ${commission}%.`
-    });
+    try {
+      await apiClient.updateSettings({ defaultCommission });
+      toast({
+        title: "Default commission updated",
+        description: `Default commission rate set to ${commission}%.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to update commission",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleUpdateCurrencyCommission = (code: string, commission: string) => {
+  const handleUpdateCurrencyCommission = async (id: string, code: string, commission: string) => {
     const comm = parseFloat(commission);
     if (isNaN(comm) || comm < 0 || comm > 100) {
       toast({
@@ -114,14 +160,24 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    setCurrencies(currencies.map(c => c.code === code ? { ...c, commission } : c));
-    toast({
-      title: "Commission updated",
-      description: `${code} commission rate updated to ${comm}%.`
-    });
+    try {
+      await apiClient.updateCurrency(id, { commissionRate: commission });
+      setCurrencies(currencies.map(c => c.id === id ? { ...c, commissionRate: commission } : c));
+      toast({
+        title: "Commission updated",
+        description: `${code} commission rate updated to ${comm}%.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to update commission",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleAddCurrency = () => {
+  const handleAddCurrency = async () => {
     if (!newCurrency.code || !newCurrency.name) {
       toast({
         title: "Missing information",
@@ -138,28 +194,49 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    setCurrencies([...currencies, {
-      code: newCurrency.code.toUpperCase(),
-      name: newCurrency.name,
-      commission: newCurrency.commission,
-      enabled: true
-    }]);
-    setNewCurrency({ code: "", name: "", commission: "0.20" });
-    toast({
-      title: "Currency added",
-      description: `${newCurrency.code.toUpperCase()} has been added to the list.`
-    });
+    try {
+      await apiClient.createCurrency({
+        code: newCurrency.code.toUpperCase(),
+        name: newCurrency.name,
+        commissionRate: newCurrency.commission,
+      });
+      await loadData(); // Reload to get the new currency with ID
+      setNewCurrency({ code: "", name: "", commission: "0.20" });
+      toast({
+        title: "Currency added",
+        description: `${newCurrency.code.toUpperCase()} has been added to the list.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to add currency",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleToggleCurrency = (code: string) => {
-    setCurrencies(currencies.map(c => c.code === code ? { ...c, enabled: !c.enabled } : c));
-    toast({
-      title: "Currency updated",
-      description: `${code} has been ${currencies.find(c => c.code === code)?.enabled ? "disabled" : "enabled"}.`
-    });
+  const handleToggleCurrency = async (id: string, code: string) => {
+    const currency = currencies.find(c => c.id === id);
+    if (!currency) return;
+    try {
+      await apiClient.updateCurrency(id, { enabled: !currency.enabled });
+      setCurrencies(currencies.map(c => c.id === id ? { ...c, enabled: !c.enabled } : c));
+      toast({
+        title: "Currency updated",
+        description: `${code} has been ${currency.enabled ? "disabled" : "enabled"}.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to update currency",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleUpdateOfficeLocation = () => {
+  const handleUpdateOfficeLocation = async () => {
     if (!officeLocation.street || !officeLocation.city) {
       toast({
         title: "Missing information",
@@ -168,14 +245,23 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    saveOfficeLocation(officeLocation);
-    toast({
-      title: "Office location updated",
-      description: "The main office location has been successfully updated."
-    });
+    try {
+      await apiClient.updateOfficeLocation(officeLocation);
+      toast({
+        title: "Office location updated",
+        description: "The main office location has been successfully updated."
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to update office location",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleAddAdminUser = () => {
+  const handleAddAdminUser = async () => {
     if (!newAdminEmail || !newAdminPassword) {
       toast({
         title: "Missing information",
@@ -192,26 +278,26 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    const normalizedEmail = newAdminEmail.toLowerCase().trim();
-    if (isAuthorizedUser(normalizedEmail)) {
+    try {
+      await apiClient.createUser({ email: newAdminEmail, password: newAdminPassword });
+      await loadData(); // Reload users
+      setNewAdminEmail("");
+      setNewAdminPassword("");
       toast({
-        title: "User exists",
-        description: "This email is already an authorized admin.",
+        title: "Admin added",
+        description: `${newAdminEmail.toLowerCase().trim()} has been added as an admin.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to add admin",
+        description: apiError.message,
         variant: "destructive"
       });
-      return;
     }
-    addAuthorizedUser(normalizedEmail, newAdminPassword);
-    setAuthorizedUsers(getAuthorizedUsers());
-    setNewAdminEmail("");
-    setNewAdminPassword("");
-    toast({
-      title: "Admin added",
-      description: `${normalizedEmail} has been added as an admin.`
-    });
   };
 
-  const handleRemoveAdminUser = (userEmail: string) => {
+  const handleRemoveAdminUser = async (userEmail: string) => {
     if (userEmail.toLowerCase().trim() === email.toLowerCase().trim()) {
       toast({
         title: "Cannot remove yourself",
@@ -220,13 +306,36 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
       });
       return;
     }
-    removeAuthorizedUser(userEmail);
-    setAuthorizedUsers(getAuthorizedUsers());
-    toast({
-      title: "Admin removed",
-      description: `${userEmail} has been removed from admin access.`
-    });
+    try {
+      await apiClient.deleteUser(userEmail);
+      await loadData(); // Reload users
+      toast({
+        title: "Admin removed",
+        description: `${userEmail} has been removed from admin access.`
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "Failed to remove admin",
+        description: apiError.message,
+        variant: "destructive"
+      });
+    }
   };
+
+  if (backendError) {
+    return (
+      <div className="space-y-6">
+        <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
+          <h3 className="text-lg font-semibold text-red-900 mb-2">Backend Connection Failed</h3>
+          <p className="text-sm text-red-700 mb-4">{backendError}</p>
+          <Button onClick={loadData} className="rounded-full">
+            Retry Connection
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -348,34 +457,43 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
 
             <div className="space-y-3 mt-6">
               <h4 className="text-sm font-semibold text-slate-700">All Admin Users</h4>
-              {Object.entries(authorizedUsers).map(([userEmail, userPassword]) => (
-                <div key={userEmail} className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-slate-900">{userEmail}</span>
-                      {userEmail.toLowerCase().trim() === email.toLowerCase().trim() && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
-                          Current User
-                        </span>
+              {loading ? (
+                <p className="text-sm text-slate-500">Loading users...</p>
+              ) : authorizedUsers.length === 0 ? (
+                <p className="text-sm text-slate-500">No users found</p>
+              ) : (
+                authorizedUsers.map((user) => (
+                  <div key={user.id} className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-slate-900">{user.email}</span>
+                        {user.email.toLowerCase().trim() === email.toLowerCase().trim() && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                            Current User
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Created: {new Date(user.createdAt).toLocaleDateString()}
+                        {user.lastLogin && ` • Last login: ${new Date(user.lastLogin).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {user.email.toLowerCase().trim() !== email.toLowerCase().trim() && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveAdminUser(user.email)}
+                          className="rounded-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">Password: ••••••••</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {userEmail.toLowerCase().trim() !== email.toLowerCase().trim() && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveAdminUser(userEmail)}
-                        className="rounded-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Card>
         </TabsContent>
@@ -472,15 +590,15 @@ const AdminPanel = ({ email, onLogout }: AdminPanelProps) => {
                       step="0.01"
                       min="0"
                       max="100"
-                      value={currency.commission}
-                      onChange={(e) => handleUpdateCurrencyCommission(currency.code, e.target.value)}
+                      value={currency.commissionRate}
+                      onChange={(e) => handleUpdateCurrencyCommission(currency.id, currency.code, e.target.value)}
                       className="w-24"
                     />
                     <span className="text-sm text-slate-500">%</span>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleToggleCurrency(currency.code)}
+                      onClick={() => handleToggleCurrency(currency.id, currency.code)}
                       className="rounded-full"
                     >
                       {currency.enabled ? "Disable" : "Enable"}
@@ -558,23 +676,34 @@ const Admin = () => {
   const [mfaCode, setMfaCode] = useState("");
   const { toast } = useToast();
 
-  // Check for existing session on mount
+  // Check for existing session on mount and verify backend connection
   useEffect(() => {
-    const session = getSession();
-    if (session) {
-      setCredentials({ email: session.email, password: "" });
-      setStep("authorized");
-    } else {
-      // Check if MFA was successful (coming from AdminMfa page)
-      const locationState = location.state as { mfaSuccess?: boolean; email?: string } | null;
-      if (locationState?.mfaSuccess && locationState?.email) {
-        setCredentials({ email: locationState.email, password: "" });
-        setStep("authorized");
-        // Clear the state to prevent re-triggering on re-renders
-        window.history.replaceState({}, document.title);
+    const checkBackendAndSession = async () => {
+      try {
+        await apiClient.healthCheck();
+        const session = getSession();
+        if (session && session.email) {
+          setCredentials({ email: session.email, password: "" });
+          setStep("authorized");
+        } else {
+          // Check if MFA was successful (coming from AdminMfa page)
+          const locationState = location.state as { mfaSuccess?: boolean; email?: string } | null;
+          if (locationState?.mfaSuccess && locationState?.email) {
+            setCredentials({ email: locationState.email, password: "" });
+            setStep("authorized");
+            window.history.replaceState({}, document.title);
+          }
+        }
+      } catch (error) {
+        toast({
+          title: "Backend not available",
+          description: "Please ensure the backend server is running.",
+          variant: "destructive",
+        });
       }
-    }
-  }, [location.state]);
+    };
+    checkBackendAndSession();
+  }, [location.state, toast]);
 
   const displayEmail = credentials.email || "admin@senate.exchange";
 
@@ -594,7 +723,7 @@ const Admin = () => {
     return `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=${provisioningUri}`;
   }, [provisioningUri]);
 
-  const handleCredentialsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCredentialsSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!credentials.email || !credentials.password) {
@@ -606,36 +735,33 @@ const Admin = () => {
       return;
     }
 
-    // Check if email is in allowed list
-    const normalizedEmail = credentials.email.toLowerCase().trim();
-    if (!isAuthorizedUser(normalizedEmail)) {
+    try {
+      const result = await apiClient.login(credentials.email, credentials.password);
+      if (result.requiresMfa) {
+        navigate("/admin/mfa", { state: { email: credentials.email } });
+        toast({
+          title: "Credentials accepted",
+          description: "Confirm the login by entering your Google Authenticator code."
+        });
+      }
+    } catch (error) {
+      const apiError = error as ApiError;
       toast({
-        title: "Access denied",
-        description: "This email is not authorized to access the admin panel.",
+        title: "Login failed",
+        description: apiError.message || "Invalid email or password.",
         variant: "destructive"
       });
-      return;
     }
-
-    // Verify password matches the authorized user's password
-    if (!verifyUserPassword(normalizedEmail, credentials.password)) {
-      toast({
-        title: "Invalid credentials",
-        description: "The email or password is incorrect.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    navigate("/admin/mfa", { state: { email: credentials.email } });
-    toast({
-      title: "Credentials accepted",
-      description: "Confirm the login by entering your Google Authenticator code."
-    });
   };
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout();
+    } catch (error) {
+      // Continue with logout even if API call fails
+      console.error("Logout API error:", error);
+    }
     clearSession();
     setStep("credentials");
     setCredentials({ email: "", password: "" });

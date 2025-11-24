@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  mfaSecret     String?   @map("mfa_secret")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLogin     DateTime? @map("last_login")
+
+  sessions      Session[]
+  auditLogs     AuditLog[]
+
+  @@map("admins")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  adminId   String   @map("admin_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Currency {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  commissionRate Decimal @map("commission_rate") @db.Decimal(5, 2)
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("currencies")
+}
+
+model ExchangeRate {
+  id            String   @id @default(uuid())
+  fromCurrency  String   @map("from_currency")
+  toCurrency    String   @map("to_currency")
+  rate          Decimal  @db.Decimal(15, 4)
+  changePercent Decimal? @map("change_percent") @db.Decimal(5, 2)
+  trend         String?  // 'up', 'down', 'neutral'
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  updatedById   String?  @map("updated_by_id")
+
+  @@unique([fromCurrency, toCurrency])
+  @@map("exchange_rates")
+}
+
+model OfficeLocation {
+  id        String   @id @default(uuid())
+  street    String
+  city      String
+  postalCode String  @map("postal_code")
+  mapUrl    String?  @map("map_url")
+  isMain    Boolean  @default(false) @map("is_main")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("office_locations")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedById String? @map("updated_by_id")
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  adminId       String?  @map("admin_id")
+  adminEmail    String   @map("admin_email")
+  actionType    String   @map("action_type")
+  actionCategory String  @map("action_category")
+  message       String
+  details       Json?
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  admin         Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([actionType])
+  @@index([actionCategory])
+  @@index([createdAt])
+  @@index([adminEmail])
+  @@map("audit_logs")
+}

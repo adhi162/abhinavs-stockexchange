@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { saveSession, getSession, isAuthorizedUser } from "@/lib/session";
+import { saveSession, getSession } from "@/lib/session";
+import apiClient, { ApiError } from "@/lib/api";
 
 // MFA Secret - must be base32 encoded (uppercase, no spaces)
 const DEFAULT_MFA_SECRET = "JBSWY3DPEHPK3PXP";
@@ -48,16 +49,21 @@ export default function AdminMfa() {
       return;
     }
 
-    // Verify email is in authorized users list
-    const normalizedEmail = email.toLowerCase().trim();
-    if (!isAuthorizedUser(normalizedEmail)) {
-      toast({
-        title: "Access denied",
-        description: "This email is not authorized to access the admin panel.",
-        variant: "destructive"
-      });
-      navigate("/admin", { replace: true });
-      return;
+    // Verify backend is available
+    const checkBackend = async () => {
+      try {
+        await apiClient.healthCheck();
+      } catch (error) {
+        toast({
+          title: "Backend not available",
+          description: "Please ensure the backend server is running.",
+          variant: "destructive"
+        });
+        navigate("/admin", { replace: true });
+      }
+    };
+    if (email) {
+      checkBackend();
     }
   }, [email, navigate, toast]);
 
@@ -87,7 +93,7 @@ export default function AdminMfa() {
     return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodedUri}`;
   }, [provisioningUri]);
 
-  const handleMfaSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleMfaSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedCode = mfaCode.trim();
     if (!/^[0-9]{6}$/.test(trimmedCode)) {
@@ -95,78 +101,34 @@ export default function AdminMfa() {
       return;
     }
 
-    // MFA_SECRET is already processed at module level (uppercase, no spaces)
-    // Use it directly to ensure consistency with QR code generation
-    if (!MFA_SECRET) {
+    if (!email) {
       toast({
-        title: "Configuration error",
-        description: "MFA secret is not configured. Please contact administrator.",
+        title: "Email required",
+        description: "Please go back and enter your email first.",
         variant: "destructive"
       });
-      console.error("MFA_SECRET is empty");
+      navigate("/admin", { replace: true });
       return;
     }
 
-    // Ensure authenticator options are set
-    authenticator.options = {
-      window: 2,
-      step: 30
-    };
-
-    // Log for debugging
-    console.log("Verifying MFA code:", {
-      code: trimmedCode,
-      secretLength: MFA_SECRET.length,
-      secretPreview: MFA_SECRET.substring(0, 8) + "...",
-      fullSecret: MFA_SECRET, // Log full secret for debugging (remove in production)
-      options: authenticator.options,
-      currentTime: new Date().toISOString()
-    });
-
-    // Generate current token for comparison (for debugging)
     try {
-      const currentToken = authenticator.generate(MFA_SECRET);
-      console.log("Current generated token:", currentToken);
-      console.log("User entered code:", trimmedCode);
-      console.log("Tokens match:", currentToken === trimmedCode);
-    } catch (genError) {
-      console.error("Failed to generate token for comparison:", genError);
-    }
-
-    // Try to verify the code
-    let isValid: boolean = false;
-    try {
-      // Use check() which returns boolean
-      isValid = authenticator.check(trimmedCode, MFA_SECRET);
-      console.log("MFA check() result:", isValid, "for code:", trimmedCode);
-
-      // If check() returns false, try verifyDelta for more info
-      if (!isValid) {
-        try {
-          // verifyDelta returns the time step difference if valid, null if invalid
-          const delta = authenticator.verifyDelta(trimmedCode, MFA_SECRET);
-          console.log("verifyDelta result:", delta);
-          if (delta !== null && typeof delta === 'number') {
-            // Delta is a number, meaning code is valid but from a different time step
-            isValid = true;
-            console.log("Code valid with delta:", delta, "time steps");
-          } else {
-            console.log("verifyDelta returned null - code is invalid");
-          }
-        } catch (deltaError) {
-          console.log("verifyDelta error:", deltaError);
-        }
-      }
-    } catch (checkError) {
-      // If check() throws, log it and treat as invalid
-      console.error("authenticator.check() threw an error:", checkError);
-      console.error("Check error details:", {
-        message: checkError instanceof Error ? checkError.message : String(checkError),
-        stack: checkError instanceof Error ? checkError.stack : undefined,
-        code: trimmedCode,
-        secretLength: MFA_SECRET.length
+      const result = await apiClient.verifyMfa(email, trimmedCode);
+      // Save session with token
+      saveSession(result.email, result.token);
+      toast({
+        title: "Authentication successful",
+        description: "You have been logged in successfully."
       });
-      isValid = false;
+      navigate("/admin", { state: { mfaSuccess: true, email: result.email } });
+    } catch (error) {
+      const apiError = error as ApiError;
+      toast({
+        title: "MFA verification failed",
+        description: apiError.message || "Invalid MFA code. Please try again.",
+        variant: "destructive"
+      });
+      setMfaCode("");
+    }
     }
 
     if (!isValid) {

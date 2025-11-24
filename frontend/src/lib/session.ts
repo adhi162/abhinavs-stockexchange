@@ -4,13 +4,15 @@ const SESSION_DURATION = 8 * 60 * 60 * 1000; // 8 hours
 
 export interface AdminSession {
   email: string;
+  token: string;
   timestamp: number;
   expiresAt: number;
 }
 
-export const saveSession = (email: string): void => {
+export const saveSession = (email: string, token: string): void => {
   const session: AdminSession = {
     email,
+    token,
     timestamp: Date.now(),
     expiresAt: Date.now() + SESSION_DURATION,
   };
