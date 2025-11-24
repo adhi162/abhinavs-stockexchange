@@ -1,4 +1,4 @@
-// Client-side data service using localStorage
+// Client-side data service using localStorage with JSON file export/import
 // Use crypto.randomUUID() if available, otherwise fallback to simple UUID generator
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -79,13 +79,14 @@ const defaultData: DataStore = {
 class DataService {
   private data: DataStore | null = null;
 
-  // Initialize data from localStorage or create default
+  // Initialize data from localStorage, public file, or create default
   initialize(): DataStore {
     if (this.data) {
       return this.data;
     }
 
     try {
+      // First try to load from localStorage
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         this.data = JSON.parse(stored);
@@ -93,7 +94,40 @@ class DataService {
         if (!this.data || !this.data.users || !this.data.currencies || !this.data.officeLocation) {
           throw new Error('Invalid data structure');
         }
-      } else {
+        // Try to load from public file in background (non-blocking)
+        this.loadFromPublicFile().catch(() => {
+          // Silently fail if file doesn't exist
+        });
+        return this.data;
+      }
+      
+      // If no localStorage data, try to load from public/data/data.json synchronously via fetch
+      // Note: This is a best-effort attempt, will fallback to default if file doesn't exist
+      fetch('/data/data.json')
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('File not found');
+        })
+        .then((importedData: DataStore) => {
+          if (importedData && importedData.users && importedData.currencies && importedData.officeLocation) {
+            this.data = importedData;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data, null, 2));
+            // Trigger a custom event to notify components
+            window.dispatchEvent(new CustomEvent('dataLoaded'));
+          }
+        })
+        .catch(() => {
+          // File doesn't exist or invalid, use default
+          if (!this.data) {
+            this.data = JSON.parse(JSON.stringify(defaultData));
+            this.save();
+          }
+        });
+      
+      // If fetch hasn't completed yet, use default for now
+      if (!this.data) {
         this.data = JSON.parse(JSON.stringify(defaultData));
         this.save();
       }
@@ -106,16 +140,97 @@ class DataService {
     return this.data!;
   }
 
-  // Save data to localStorage
+  // Save data to localStorage and export to file
   save(): void {
     if (!this.data) {
       this.initialize();
     }
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data, null, 2));
+      
+      // Also export to file (downloads data.json - user should place it in public/data/)
+      // Note: Browser security prevents direct file writes, so we download the file
+      this.exportToFile();
     } catch (error) {
       console.error('Failed to save data:', error);
     }
+  }
+
+  // Export data to JSON file (downloads to user's downloads folder as data.json)
+  // User should manually place this file in public/data/data.json
+  exportToFile(): void {
+    if (!this.data) {
+      this.initialize();
+    }
+    try {
+      const dataStr = JSON.stringify(this.data, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'data.json';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export data to file:', error);
+    }
+  }
+
+  // Try to load data from public/data/data.json on initialization
+  async loadFromPublicFile(): Promise<boolean> {
+    try {
+      const response = await fetch('/data/data.json');
+      if (!response.ok) {
+        return false;
+      }
+      const importedData = await response.json() as DataStore;
+      
+      // Validate structure
+      if (!importedData || !importedData.users || !importedData.currencies || !importedData.officeLocation) {
+        return false;
+      }
+      
+      this.data = importedData;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data, null, 2));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Save data to data/data.json file (via download, user places it manually)
+  saveToDataFolder(): void {
+    this.exportToFile();
+  }
+
+  // Import data from JSON file
+  importFromFile(file: File): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const importedData = JSON.parse(content) as DataStore;
+          
+          // Validate structure
+          if (!importedData || !importedData.users || !importedData.currencies || !importedData.officeLocation) {
+            throw new Error('Invalid data structure in file');
+          }
+          
+          this.data = importedData;
+          this.save();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
   }
 
   // Get current data
@@ -248,4 +363,3 @@ class DataService {
 }
 
 export const dataService = new DataService();
-

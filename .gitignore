@@ -6,6 +6,9 @@ frontend/
 dist/
 *.log
 
+# Data files (keep structure, ignore content)
+public/data/data.json
+
 # Environment variables
 .env
 .env.local

@@ -72,7 +72,7 @@ const AdminPanel = ({ email, onLogout, onBackToLogin }: AdminPanelProps) => {
     setLoading(true);
     setBackendError(null);
     try {
-      // Initialize data service if needed
+      // Initialize data service (will try to load from public/data/data.json if available)
       dataService.initialize();
       
       // Load all data from localStorage
@@ -385,7 +385,7 @@ const AdminPanel = ({ email, onLogout, onBackToLogin }: AdminPanelProps) => {
       </div>
 
       <Tabs defaultValue="currencies" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="currencies">
             <Coins className="h-4 w-4 mr-2" />
             Currencies & Rates
@@ -397,6 +397,10 @@ const AdminPanel = ({ email, onLogout, onBackToLogin }: AdminPanelProps) => {
           <TabsTrigger value="location">
             <MapPin className="h-4 w-4 mr-2" />
             Office
+          </TabsTrigger>
+          <TabsTrigger value="data">
+            <Settings className="h-4 w-4 mr-2" />
+            Data Management
           </TabsTrigger>
         </TabsList>
 
@@ -677,6 +681,92 @@ const AdminPanel = ({ email, onLogout, onBackToLogin }: AdminPanelProps) => {
               <Button onClick={handleUpdateOfficeLocation} className="w-full rounded-full">
                 Update Office Location
               </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-4 mt-6">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Data Management</h3>
+            <p className="text-sm text-slate-600 mb-6">
+              Export your data to a JSON file or import from an existing file. Data is automatically saved to localStorage and exported to <code className="px-2 py-1 bg-slate-100 rounded text-xs">data/data.json</code>.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-emerald-600" />
+                  Export Data
+                </h4>
+                <p className="text-sm text-slate-600 mb-4">
+                  Download all application data as a JSON file. Place it in the <code className="px-2 py-1 bg-white rounded text-xs">data/</code> folder of your project.
+                </p>
+                <Button 
+                  onClick={() => {
+                    dataService.exportToFile();
+                    toast({
+                      title: "Data exported",
+                      description: "data.json file has been downloaded. Place it in the data/ folder."
+                    });
+                  }}
+                  className="rounded-full"
+                >
+                  Export to data.json
+                </Button>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-blue-600" />
+                  Import Data
+                </h4>
+                <p className="text-sm text-slate-600 mb-4">
+                  Import data from a JSON file. This will replace all current data.
+                </p>
+                <div>
+                  <Input
+                    type="file"
+                    accept=".json"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      try {
+                        await dataService.importFromFile(file);
+                        loadData(); // Reload all data
+                        toast({
+                          title: "Data imported",
+                          description: "Data has been successfully imported from file."
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: "Import failed",
+                          description: error.message || "Failed to import data. Please check the file format.",
+                          variant: "destructive"
+                        });
+                      }
+                      // Reset file input
+                      e.target.value = '';
+                    }}
+                    className="mb-3"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Select a JSON file to import. Current data will be replaced.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Data Storage</h4>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <p>• <strong>Runtime:</strong> Browser localStorage (automatic)</p>
+                  <p>• <strong>File location:</strong> <code className="px-2 py-1 bg-white rounded text-xs">public/data/data.json</code></p>
+                  <p>• <strong>Auto-export:</strong> Data is automatically exported on every save</p>
+                  <p className="text-xs text-slate-500 mt-3">
+                    <strong>How it works:</strong> Data is saved to localStorage for runtime use. On every save, a <code className="px-1 py-0.5 bg-white rounded">data.json</code> file is downloaded. Place this file in <code className="px-1 py-0.5 bg-white rounded">public/data/</code> folder to load it on app startup.
+                  </p>
+                </div>
+              </div>
             </div>
           </Card>
         </TabsContent>

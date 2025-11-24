@@ -80,11 +80,31 @@ npm run preview
 
 ## 💾 Data Storage
 
-All data is stored in browser `localStorage` under the key `senate_exchange_data`:
+Data is stored in two places:
+
+### 1. Browser localStorage (Runtime)
+- **Storage key:** `senate_exchange_data`
+- **Purpose:** Fast runtime access
+- **Location:** Browser's localStorage
+- **Auto-saved:** Every time data changes
+
+### 2. JSON File (Persistent)
+- **File location:** `public/data/data.json`
+- **Purpose:** Persistent storage, backup, and version control
+- **Auto-export:** Data is automatically exported on every save
+- **Manual import:** Use the Data Management tab in admin panel
+
+**Data includes:**
 - **Users:** Admin user accounts with hashed passwords
 - **Currencies:** Currency codes, names, exchange rates, and enabled status
 - **Office Location:** Street, city, postal code, and map URL
-- **Sessions:** Active JWT sessions (cleaned up on logout)
+
+**How it works:**
+1. Data is saved to localStorage for fast runtime access
+2. On every save, `data.json` is automatically downloaded
+3. Place the downloaded file in `public/data/` folder
+4. On app startup, data is loaded from `public/data/data.json` if available
+5. If no file exists, default data is created
 
 ## 📁 Project Structure
 
@@ -141,3 +161,7 @@ lovable/
 ## 📄 License
 
 ISC
+
+
+------------------------------
+reload the site is asking me to save @data.json file, I dont wwant that, I want appication to fetch and update persitent data from public/data/data.json when I running locally, and from S3 bucket when I am hosting it on aws
